@@ -263,6 +263,10 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet {
         return EMPTY;
     }
 
+    public static ImmutableLongTreeSet singleton(long value) {
+        return new ImmutableLongTreeSet(new long[] { value });
+    }
+
     public static ImmutableLongTreeSet from(long[] array) {
         if (array.length == 0) {
             return EMPTY;
