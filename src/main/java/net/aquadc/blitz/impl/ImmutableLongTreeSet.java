@@ -1,10 +1,13 @@
 package net.aquadc.blitz.impl;
 
 import net.aquadc.blitz.ImmutableLongSet;
+import net.aquadc.blitz.LongIterator;
 import net.aquadc.blitz.LongSet;
 import net.aquadc.blitz.MutableLongSet;
 
 import java.util.Arrays;
+import java.util.NoSuchElementException;
+import java.util.RandomAccess;
 
 import static net.aquadc.blitz.impl.Longs.*;
 
@@ -12,7 +15,7 @@ import static net.aquadc.blitz.impl.Longs.*;
  * Created by mike on 25.01.17
  */
 
-public final class ImmutableLongTreeSet implements ImmutableLongSet {
+public final class ImmutableLongTreeSet implements ImmutableLongSet, RandomAccess {
 
     private static final ImmutableLongTreeSet EMPTY = new ImmutableLongTreeSet();
 
@@ -255,6 +258,24 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet {
         MutableLongTreeSet set = new MutableLongTreeSet(this);
         set.retainAll(elements);
         return from(set);
+    }
+
+    @Override
+    public LongIterator iterator() {
+        return new Iterator();
+    }
+
+    private class Iterator implements LongIterator {
+        private int next = 0;
+        @Override public boolean hasNext() {
+            return next < array.length;
+        }
+        @Override public long next() {
+            if (next == array.length) {
+                throw new NoSuchElementException("No more elements, end reached. (collection size: " + array.length + ')');
+            }
+            return array[next++];
+        }
     }
 
     // static factory

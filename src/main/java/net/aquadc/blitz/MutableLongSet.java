@@ -56,4 +56,10 @@ public interface MutableLongSet extends LongSet {
      */
     boolean retainAll(LongSet elements);
 
+    /**
+     * Returns a mutable iterator over this collection.
+     * @return a mutable iterator over this collection
+     */
+    @Override
+    MutableLongIterator iterator();
 }

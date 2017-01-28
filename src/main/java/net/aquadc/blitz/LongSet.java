@@ -70,4 +70,10 @@ public interface LongSet extends PrimitiveSet<Long> {
      */
     long[] copyToArray();
 
+    /**
+     * Returns a new iterator over this collection.
+     * @return iterator over this collection
+     */
+    LongIterator iterator();
+
 }
