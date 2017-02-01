@@ -62,4 +62,11 @@ public interface MutableLongSet extends LongSet {
      */
     @Override
     MutableLongIterator iterator();
+
+    /**
+     * Adds {@code element}, if not in collection, removes it otherwise.
+     * @param element    element to add or remove
+     * @return Δ: {@code -1} if removed, {@code +1} if added
+     */
+    int addOrRemove(long element);
 }

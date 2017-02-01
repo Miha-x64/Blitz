@@ -78,22 +78,22 @@ public class ImmutableLongTreeSetTest {
 
     @Test
     public void containsAtLeastOne0Test() {
-        assertFalse(ImmutableLongTreeSet.empty().containsAtLeastOne(new long[] {})); // Surprising? :)
-        assertFalse(ImmutableLongTreeSet.empty().containsAtLeastOne(new long[] {0}));
-        assertTrue(ImmutableLongTreeSet.from(new long[] {0}).containsAtLeastOne(new long[] {0}));
-        assertTrue(ImmutableLongTreeSet.from(new long[] {0, 1}).containsAtLeastOne(new long[] {0}));
-        assertTrue(ImmutableLongTreeSet.from(new long[] {0, 1}).containsAtLeastOne(new long[] {5, 8, 1}));
-        assertFalse(ImmutableLongTreeSet.from(new long[] {0, 1}).containsAtLeastOne(new long[] {5, 8}));
+        assertFalse(ImmutableLongTreeSet.empty().containsAny(new long[] {})); // Surprising? :)
+        assertFalse(ImmutableLongTreeSet.empty().containsAny(new long[] {0}));
+        assertTrue(ImmutableLongTreeSet.from(new long[] {0}).containsAny(new long[] {0}));
+        assertTrue(ImmutableLongTreeSet.from(new long[] {0, 1}).containsAny(new long[] {0}));
+        assertTrue(ImmutableLongTreeSet.from(new long[] {0, 1}).containsAny(new long[] {5, 8, 1}));
+        assertFalse(ImmutableLongTreeSet.from(new long[] {0, 1}).containsAny(new long[] {5, 8}));
     }
 
     @Test
     public void containsAtLeastOne1Test() {
-        assertFalse(ImmutableLongTreeSet.empty().containsAtLeastOne(ImmutableLongTreeSet.empty()));
-        assertFalse(ImmutableLongTreeSet.empty().containsAtLeastOne(ImmutableLongTreeSet.from(new long[] {0})));
-        assertTrue(ImmutableLongTreeSet.from(new long[] {0}).containsAtLeastOne(ImmutableLongTreeSet.from(new long[] {0})));
-        assertTrue(ImmutableLongTreeSet.from(new long[] {0, 1}).containsAtLeastOne(ImmutableLongTreeSet.from(new long[] {0})));
-        assertTrue(ImmutableLongTreeSet.from(new long[] {0, 1}).containsAtLeastOne(ImmutableLongTreeSet.from(new long[] {5, 8, 1})));
-        assertFalse(ImmutableLongTreeSet.from(new long[] {0, 1}).containsAtLeastOne(ImmutableLongTreeSet.from(new long[] {5, 8})));
+        assertFalse(ImmutableLongTreeSet.empty().containsAny(ImmutableLongTreeSet.empty()));
+        assertFalse(ImmutableLongTreeSet.empty().containsAny(ImmutableLongTreeSet.from(new long[] {0})));
+        assertTrue(ImmutableLongTreeSet.from(new long[] {0}).containsAny(ImmutableLongTreeSet.from(new long[] {0})));
+        assertTrue(ImmutableLongTreeSet.from(new long[] {0, 1}).containsAny(ImmutableLongTreeSet.from(new long[] {0})));
+        assertTrue(ImmutableLongTreeSet.from(new long[] {0, 1}).containsAny(ImmutableLongTreeSet.from(new long[] {5, 8, 1})));
+        assertFalse(ImmutableLongTreeSet.from(new long[] {0, 1}).containsAny(ImmutableLongTreeSet.from(new long[] {5, 8})));
     }
 
 }

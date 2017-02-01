@@ -26,6 +26,11 @@ public class MutableAndImmutableTest {
         assertFalse(set.addAll(ImmutableLongTreeSet.from(new long[] {64, 201})));
         assertEquals(9, set.size());
 
+        assertEquals(+1, set.addOrRemove(91));
+        assertEquals(+1, set.addOrRemove(92));
+        assertEquals(-1, set.addOrRemove(92));
+        assertEquals(-1, set.addOrRemove(91));
+
         assertTrue(set.remove(2));
         assertEquals(8, set.size());
         assertFalse(set.remove(2));

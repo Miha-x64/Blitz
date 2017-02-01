@@ -157,7 +157,7 @@ public final class MutableLongTreeSet implements MutableLongSet, RandomAccess {
     }
 
     @Override
-    public boolean containsAtLeastOne(long[] elements) {
+    public boolean containsAny(long[] elements) {
         for (long el : elements) {
             if (contains(el)) {
                 return true;
@@ -167,7 +167,7 @@ public final class MutableLongTreeSet implements MutableLongSet, RandomAccess {
     }
 
     @Override
-    public boolean containsAtLeastOne(LongSet elements) {
+    public boolean containsAny(LongSet elements) {
         for (int i = 0, size = elements.size(); i < size; i++) {
             if (contains(elements.get(i))) {
                 return true;
@@ -201,32 +201,29 @@ public final class MutableLongTreeSet implements MutableLongSet, RandomAccess {
 
     @Override
     public boolean add(long l) {
-        version++; // detect not only true insertions, but also insertion attempts
+        int index = binarySearch0(longs, 0, size, l);
+        if (index >= 0) {
+            version++; // detect not only true insertions, but also insertion attempts
+            return false; // already exists
+        }
+
+        insertAt(-(index + 1), l);
+        return true;
+    }
+
+    private void insertAt(int index, long value) {
+        version++;
 
         long[] longs = this.longs;
         int size = this.size;
 
-        int index = binarySearch0(longs, 0, size, l);
-        if (index >= 0) {
-            return false; // already exists
-        }
-
-        int insertionIndex = -(index + 1);
-
         int newSize = size + 1;
         if (longs.length == size) { // no more room
-            this.longs = reallocAndInsert(longs, size, newSize, insertionIndex, l);
-            this.size = newSize;
-            return true;
+            this.longs = reallocAndInsert(longs, size, newSize, index, value);
+        } else { // we have sufficient room
+            insert(longs, index, size, value);
         }
-
-        // we have sufficient room
-        insert(longs, insertionIndex, size, l);
-
         this.size = newSize;
-//        System.out.println(l + " inserted at " + insertionIndex + " without array expansion: " + Arrays.toString(longs) + "; size: " + size);
-
-        return true;
     }
 
     @Override
@@ -269,7 +266,7 @@ public final class MutableLongTreeSet implements MutableLongSet, RandomAccess {
         }
 
         this.longs = longs;
-        this.size = size; // <!--
+        this.size = size;
         return true;
     }
 
@@ -321,28 +318,25 @@ public final class MutableLongTreeSet implements MutableLongSet, RandomAccess {
 
     @Override
     public boolean remove(long l) {
-        long[] longs = this.longs;
-        int size = this.size;
-
         int index = binarySearch0(longs, 0, size, l);
-        return removeAt(index);
-    }
-
-    /*pkg*/ boolean removeAt(int index) {
-        version++;
-
         if (index < 0) {
+            version++; // detect unsuccessful mod attempts
             return false;
         }
 
-        int newSize = size - 1;
+        removeAt(index);
+        return true;
+    }
+
+    /*pkg*/ void removeAt(int index) {
+        version++;
+
         long[] longs = this.longs;
-        if (index < newSize) { // removing not last item: [a, b, c, DELETE ME, e, f] -> [a, b, c, e, f]
+        int newSize = size - 1;
+        if (index < newSize) { // remove not last item: [a, b, c, DELETE ME, e, f] -> [a, b, c, e, f]
             System.arraycopy(longs, index + 1, longs, index, newSize - index);
         }
-
         this.size = newSize;
-        return false;
     }
 
     @Override
@@ -442,6 +436,20 @@ public final class MutableLongTreeSet implements MutableLongSet, RandomAccess {
                 throw new ConcurrentModificationException("This collection was modified while iterating.");
             }
         }
+    }
+
+    @Override
+    public int addOrRemove(long element) {
+        int index = binarySearch0(longs, 0, size, element);
+        if (index >= 0) {
+            // already contains, remove
+            removeAt(index);
+            return -1;
+        }
+
+        // does not contain, add
+        insertAt(-(index + 1), element);
+        return +1;
     }
 
     // todo: cleanup method that shrinks array

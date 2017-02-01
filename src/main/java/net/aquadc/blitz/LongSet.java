@@ -44,12 +44,12 @@ public interface LongSet extends PrimitiveSet<Long> {
      * @param elements    elements to search
      * @return {@code true} if at least one element is in this collection, {@code false} otherwise
      */
-    boolean containsAtLeastOne(long[] elements);
+    boolean containsAny(long[] elements);
 
     /**
-     * {@link this#containsAtLeastOne(long[])}
+     * {@link this#containsAny(long[])}
      */
-    boolean containsAtLeastOne(LongSet elements);
+    boolean containsAny(LongSet elements);
 
 
     /**

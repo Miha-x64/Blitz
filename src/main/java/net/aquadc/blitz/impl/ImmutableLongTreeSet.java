@@ -111,7 +111,7 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet, RandomAcces
     }
 
     @Override
-    public boolean containsAtLeastOne(long[] elements) {
+    public boolean containsAny(long[] elements) {
         for (long el : elements) {
             if (contains(el)) {
                 return true;
@@ -121,7 +121,7 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet, RandomAcces
     }
 
     @Override
-    public boolean containsAtLeastOne(LongSet elements) {
+    public boolean containsAny(LongSet elements) {
         for (int i = 0, size = elements.size(); i < size; i++) {
             if (contains(elements.get(i))) {
                 return true;
@@ -218,7 +218,7 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet, RandomAcces
 
     @Override
     public ImmutableLongSet withoutAll(long[] elements) {
-        if (!containsAtLeastOne(elements)) {
+        if (!containsAny(elements)) {
             return this;
         }
 
@@ -229,7 +229,7 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet, RandomAcces
 
     @Override
     public ImmutableLongSet withoutAll(LongSet elements) {
-        if (!containsAtLeastOne(elements)) {
+        if (!containsAny(elements)) {
             return this;
         }
 
