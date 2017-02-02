@@ -19,7 +19,7 @@ interface MutableLongTreeSet extends LongSet {
     boolean removeAll(LongSet elements);
     boolean retainAll(long[] elements);
     boolean retainAll(LongSet elements);
-    MutableLongIterator iterator();
+    @Override MutableLongIterator iterator();
     int addOrRemove(long element);
 }
 ```
@@ -68,8 +68,9 @@ public interface PrimitiveSet<E> {
 
 ## Performance
 
-I believe `MutableLongTreeSet` is faster than `TreeSet<Long>`
-and much more memory-efficient. I know that I should measure it. ;)
+![insertions](benchmarks/insersions.png)
+
+![searches](benchmarks/searches.png)
 
 ## Threading
 
