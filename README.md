@@ -77,3 +77,8 @@ public interface PrimitiveSet<E> {
 `MutableLongTreeSet` is absolutely **not** thread-safe.
 In multithreaded environment, use immutable collections,
 or drop me a line and I will implement `ConcurrentLongTreeSet`.
+
+## To do
+
+* Memory benchmarks
+* MutableLongHashSet for performance
