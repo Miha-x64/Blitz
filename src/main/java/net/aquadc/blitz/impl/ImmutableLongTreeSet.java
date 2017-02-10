@@ -1,9 +1,6 @@
 package net.aquadc.blitz.impl;
 
-import net.aquadc.blitz.ImmutableLongSet;
-import net.aquadc.blitz.LongIterator;
-import net.aquadc.blitz.LongSet;
-import net.aquadc.blitz.MutableLongSet;
+import net.aquadc.blitz.*;
 
 import java.util.Arrays;
 import java.util.NoSuchElementException;
@@ -15,7 +12,7 @@ import static net.aquadc.blitz.impl.Longs.*;
  * Created by mike on 25.01.17
  */
 
-public final class ImmutableLongTreeSet implements ImmutableLongSet, RandomAccess {
+public final class ImmutableLongTreeSet implements ImmutableLongSet, OrderedLongSet, RandomAccess {
 
     private static final ImmutableLongTreeSet EMPTY = new ImmutableLongTreeSet();
 
@@ -30,7 +27,6 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet, RandomAcces
 
 
     // from PrimitiveSet
-
 
     @Override
     public int size() {
@@ -52,7 +48,12 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet, RandomAcces
             return false;
         }
 
-        return equal(array, array.length, (LongSet) obj);
+        if (obj instanceof OrderedLongSet) {
+            return orderedSetsEqual(array, array.length, (OrderedLongSet) obj);
+        }
+
+        LongSet ls = (LongSet) obj;
+        return ls.size() == array.length && containsAll(ls);
     }
 
     @Override
@@ -62,15 +63,6 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet, RandomAcces
 
 
     // from LongSet
-    // copied from MutableLongSet, keep in sync
-    @Override
-    public long get(int index) {
-        long[] array = this.array;
-        if (index < 0 || index >= array.length) {
-            throw new IndexOutOfBoundsException("index " + index + " is not in [0; " + (array.length-1) + ']');
-        }
-        return array[index];
-    }
 
     @Override
     public int indexOf(long element) {
@@ -102,8 +94,9 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet, RandomAcces
 
     @Override
     public boolean containsAll(LongSet elements) {
-        for (int i = 0, size = elements.size(); i < size; i++) {
-            if (!contains(elements.get(i))) {
+        LongIterator itr = elements.iterator();
+        while (itr.hasNext()) {
+            if (!contains(itr.next())) {
                 return false;
             }
         }
@@ -122,8 +115,9 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet, RandomAcces
 
     @Override
     public boolean containsAny(LongSet elements) {
-        for (int i = 0, size = elements.size(); i < size; i++) {
-            if (contains(elements.get(i))) {
+        LongIterator itr = elements.iterator();
+        while (itr.hasNext()) {
+            if (contains(itr.next())) {
                 return true;
             }
         }
@@ -276,6 +270,37 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet, RandomAcces
             }
             return array[next++];
         }
+        @Override public void reset() {
+            next = 0;
+        }
+    }
+
+    // from OrderedLongSet
+
+    // copied from MutableLongSet, keep in sync
+    @Override
+    public long get(int index) {
+        long[] array = this.array;
+        if (index < 0 || index >= array.length) {
+            throw new IndexOutOfBoundsException("index " + index + " is not in [0; " + (array.length-1) + ']');
+        }
+        return array[index];
+    }
+
+    @Override
+    public long smallest() {
+        if (this == EMPTY) {
+            throw new NoSuchElementException();
+        }
+        return array[0];
+    }
+
+    @Override
+    public long biggest() {
+        if (this == EMPTY) {
+            throw new NoSuchElementException();
+        }
+        return array[array.length - 1];
     }
 
     // static factory

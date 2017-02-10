@@ -1,17 +1,15 @@
 package net.aquadc.blitz.impl;
 
-import net.aquadc.blitz.ImmutableLongSet;
-import net.aquadc.blitz.MutableLongIterator;
-import net.aquadc.blitz.MutableLongSet;
-import net.aquadc.blitz.LongSet;
+import net.aquadc.blitz.*;
 
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
+import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 
 import static net.aquadc.blitz.impl.Longs.*;
 
-public final class MutableLongTreeSet implements MutableLongSet, RandomAccess {
+public final class MutableLongTreeSet implements MutableLongSet, OrderedLongSet, RandomAccess {
 
     private long[] longs;
     private int size;
@@ -101,7 +99,12 @@ public final class MutableLongTreeSet implements MutableLongSet, RandomAccess {
             return false;
         }
 
-        return equal(longs, size, (LongSet) obj);
+        if (obj instanceof OrderedLongSet) {
+            return orderedSetsEqual(longs, size, (OrderedLongSet) obj);
+        }
+
+        LongSet ls = (LongSet) obj;
+        return ls.size() == size && containsAll(ls);
     }
 
     @Override
@@ -111,14 +114,6 @@ public final class MutableLongTreeSet implements MutableLongSet, RandomAccess {
 
 
     // from LongSet
-
-    @Override
-    public long get(int index) {
-        if (index < 0 || index >= size) {
-            throw new IndexOutOfBoundsException("index " + index + " is not in [0; " + (size-1) + ']');
-        }
-        return longs[index];
-    }
 
     @Override
     public int indexOf(long element) {
@@ -148,8 +143,9 @@ public final class MutableLongTreeSet implements MutableLongSet, RandomAccess {
 
     @Override
     public boolean containsAll(LongSet elements) {
-        for (int i = 0, size = elements.size(); i < size; i++) {
-            if (!contains(elements.get(i))) {
+        LongIterator itr = elements.iterator();
+        while (itr.hasNext()) {
+            if (!contains(itr.next())) {
                 return false;
             }
         }
@@ -168,8 +164,9 @@ public final class MutableLongTreeSet implements MutableLongSet, RandomAccess {
 
     @Override
     public boolean containsAny(LongSet elements) {
-        for (int i = 0, size = elements.size(); i < size; i++) {
-            if (contains(elements.get(i))) {
+        LongIterator itr = elements.iterator();
+        while (itr.hasNext()) {
+            if (contains(itr.next())) {
                 return true;
             }
         }
@@ -276,9 +273,9 @@ public final class MutableLongTreeSet implements MutableLongSet, RandomAccess {
         version++;
 
         int newElements = 0;
-        int elementsSize = elements.size();
-        for (int i = 0; i < elementsSize; i++) {
-            if (!contains(elements.get(i))) {
+        LongIterator itr = elements.iterator();
+        while (itr.hasNext()) {
+            if (!contains(itr.next())) {
                 newElements++;
             }
         }
@@ -296,8 +293,9 @@ public final class MutableLongTreeSet implements MutableLongSet, RandomAccess {
             longs = newLongs;
         }
 
-        for (int i = 0; i < elementsSize; i++) {
-            long element = elements.get(i);
+        itr.reset();
+        while (itr.hasNext()) {
+            long element = itr.next();
             int index = binarySearch0(longs, 0, size, element);
             if (index >= 0) {
                 continue;
@@ -431,6 +429,10 @@ public final class MutableLongTreeSet implements MutableLongSet, RandomAccess {
             removeAt(next - 1);
             version++;
         }
+        @Override public void reset() {
+            next = 0;
+            version = MutableLongTreeSet.this.version;
+        }
         private void checkForComodification() {
             if (version != MutableLongTreeSet.this.version) {
                 throw new ConcurrentModificationException("This collection was modified while iterating.");
@@ -450,6 +452,32 @@ public final class MutableLongTreeSet implements MutableLongSet, RandomAccess {
         // does not contain, add
         insertAt(-(index + 1), element);
         return +1;
+    }
+
+    // from OrderedSet
+
+    @Override
+    public long get(int index) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("index " + index + " is not in [0; " + (size-1) + ']');
+        }
+        return longs[index];
+    }
+
+    @Override
+    public long smallest() {
+        if (size == 0) {
+            throw new NoSuchElementException();
+        }
+        return longs[0];
+    }
+
+    @Override
+    public long biggest() {
+        if (size == 0) {
+            throw new NoSuchElementException();
+        }
+        return longs[size-1];
     }
 
     // todo: cleanup method that shrinks array

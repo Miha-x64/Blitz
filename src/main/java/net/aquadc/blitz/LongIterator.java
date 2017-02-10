@@ -6,4 +6,9 @@ package net.aquadc.blitz;
 public interface LongIterator {
     boolean hasNext();
     long next();
+
+    /**
+     * Brings iterator to its initial state including version / modCount.
+     */
+    void reset();
 }

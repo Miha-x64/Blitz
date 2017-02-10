@@ -61,18 +61,18 @@ public class LongsTest {
 
     @Test
     public void testEqual() {
-        assertTrue(Longs.equal(new long[0], 0, new MutableLongTreeSet()));
-        assertTrue(Longs.equal(new long[1], 0, new MutableLongTreeSet()));
-        assertTrue(Longs.equal(new long[0], 0, ImmutableLongTreeSet.empty()));
-        assertTrue(Longs.equal(new long[1], 0, ImmutableLongTreeSet.empty()));
+        assertTrue(Longs.orderedSetsEqual(new long[0], 0, new MutableLongTreeSet()));
+        assertTrue(Longs.orderedSetsEqual(new long[1], 0, new MutableLongTreeSet()));
+        assertTrue(Longs.orderedSetsEqual(new long[0], 0, ImmutableLongTreeSet.empty()));
+        assertTrue(Longs.orderedSetsEqual(new long[1], 0, ImmutableLongTreeSet.empty()));
 
-        assertTrue(Longs.equal(new long[1], 1, new MutableLongTreeSet(new long[] {0})));
-        assertTrue(Longs.equal(new long[1], 1, ImmutableLongTreeSet.from(new long[] {0})));
+        assertTrue(Longs.orderedSetsEqual(new long[1], 1, new MutableLongTreeSet(new long[] {0})));
+        assertTrue(Longs.orderedSetsEqual(new long[1], 1, ImmutableLongTreeSet.from(new long[] {0})));
 
-        assertTrue(Longs.equal(new long[] {0, 0}, 1, new MutableLongTreeSet(new long[] {0, 0})));
-        assertFalse(Longs.equal(new long[] {0, 0}, 2, new MutableLongTreeSet(new long[] {0, 1})));
-        assertTrue(Longs.equal(new long[] {0, 0}, 1, ImmutableLongTreeSet.from(new long[] {0, 0})));
-        assertFalse(Longs.equal(new long[] {0, 0}, 2, ImmutableLongTreeSet.from(new long[] {0, 1})));
+        assertTrue(Longs.orderedSetsEqual(new long[] {0, 0}, 1, new MutableLongTreeSet(new long[] {0, 0})));
+        assertFalse(Longs.orderedSetsEqual(new long[] {0, 0}, 2, new MutableLongTreeSet(new long[] {0, 1})));
+        assertTrue(Longs.orderedSetsEqual(new long[] {0, 0}, 1, ImmutableLongTreeSet.from(new long[] {0, 0})));
+        assertFalse(Longs.orderedSetsEqual(new long[] {0, 0}, 2, ImmutableLongTreeSet.from(new long[] {0, 1})));
     }
 
     @Test

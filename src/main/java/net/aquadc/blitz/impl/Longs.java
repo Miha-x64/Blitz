@@ -1,6 +1,6 @@
 package net.aquadc.blitz.impl;
 
-import net.aquadc.blitz.LongSet;
+import net.aquadc.blitz.OrderedLongSet;
 
 /**
  * Created by mike on 25.01.17
@@ -92,7 +92,7 @@ final class Longs {
         return sb.append(']').toString();
     }
 
-    static boolean equal(long[] array, int size, LongSet b) {
+    static boolean orderedSetsEqual(long[] array, int size, OrderedLongSet b) {
         if (size != b.size()) {
             return false;
         }

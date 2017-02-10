@@ -7,14 +7,6 @@ package net.aquadc.blitz;
 public interface LongSet extends PrimitiveSet<Long> {
 
     /**
-     * Returns element at {@code index}.
-     * It is OK to completely change order of elements when collection is mutated.
-     * @param index    index
-     * @return element at {@code index}
-     */
-    long get(int index);
-
-    /**
      * Returns element's index. It's okay to lose indices after mutation.
      * @param element    element to search for
      * @return {@code element}'s index or -1 if not found

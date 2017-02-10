@@ -14,7 +14,7 @@ public class InstantiationTest {
 
     @Test
     public void testConstructors() {
-        MutableLongSet set = new MutableLongTreeSet();
+        MutableLongTreeSet set = new MutableLongTreeSet();
         assertEquals(0, set.size());
         set.add(10);
         assertEquals(1, set.size());

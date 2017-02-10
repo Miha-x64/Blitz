@@ -42,7 +42,6 @@ interface ImmutableLongSet extends LongSet {
 ### Both interfaces derive these ones
 ```java
 interface LongSet extends PrimitiveSet<Long> {
-    long get(int index);
     int indexOf(long element);
     boolean contains(long element);
     boolean containsAll(long[] elements);
