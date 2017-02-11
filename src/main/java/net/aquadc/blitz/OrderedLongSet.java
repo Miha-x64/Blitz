@@ -14,6 +14,13 @@ public interface OrderedLongSet extends LongSet {
     long get(int index);
 
     /**
+     * Returns element's index. It's okay to lose indices after mutation.
+     * @param element    element to search for
+     * @return {@code element}'s index or -1 if not found
+     */
+    int indexOf(long element);
+
+    /**
      * Returns the smallest element in the set.
      * @return the smallest element in the set
      */

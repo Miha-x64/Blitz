@@ -50,7 +50,7 @@ public final class MutableLongTreeSet implements MutableLongSet, OrderedLongSet,
         longs = EMPTY;
         // size = 0
 
-        addAll(initialContents);
+        addAll(initialContents); // we can't
     }
 
     /**
@@ -114,15 +114,6 @@ public final class MutableLongTreeSet implements MutableLongSet, OrderedLongSet,
 
 
     // from LongSet
-
-    @Override
-    public int indexOf(long element) {
-        int search = binarySearch0(longs, 0, size, element);
-        if (search < -1) {
-            search = -1;
-        }
-        return search;
-    }
 
     @Override
     public boolean contains(long o) {
@@ -223,7 +214,7 @@ public final class MutableLongTreeSet implements MutableLongSet, OrderedLongSet,
         this.size = newSize;
     }
 
-    @Override
+    @Override // so sloooow...
     public boolean addAll(long[] elements) {
         version++;
 
@@ -390,12 +381,11 @@ public final class MutableLongTreeSet implements MutableLongSet, OrderedLongSet,
         long[] longs = this.longs;
         int size = this.size;
         for (int i = 0; i < size; i++) {
-            int index = elements.indexOf(longs[i]);
             // found && remove: remove
             // not found && remove: skip
             // found && retain: skip
             // not found && retain: remove
-            if (index >= 0 == remove) {
+            if (elements.contains(longs[i]) == remove) {
                 size--;
                 if (i < size) { // not a last item
                     System.arraycopy(longs, i + 1, longs, i, size - i);
@@ -462,6 +452,15 @@ public final class MutableLongTreeSet implements MutableLongSet, OrderedLongSet,
             throw new IndexOutOfBoundsException("index " + index + " is not in [0; " + (size-1) + ']');
         }
         return longs[index];
+    }
+
+    @Override
+    public int indexOf(long element) {
+        int search = binarySearch0(longs, 0, size, element);
+        if (search < -1) {
+            search = -1;
+        }
+        return search;
     }
 
     @Override

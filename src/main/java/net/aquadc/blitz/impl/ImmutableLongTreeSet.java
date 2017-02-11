@@ -65,16 +65,6 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet, OrderedLong
     // from LongSet
 
     @Override
-    public int indexOf(long element) {
-        long[] array = this.array;
-        int search = binarySearch0(array, 0, array.length, element);
-        if (search < -1) {
-            search = -1;
-        }
-        return search;
-    }
-
-    @Override
     public boolean contains(long o) {
         long[] longs = this.array;
         int search = binarySearch0(longs, 0, longs.length, o);
@@ -146,7 +136,6 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet, OrderedLong
 
 
     // from ImmutableLongSet
-
 
     @Override
     public ImmutableLongSet with(long element) {
@@ -285,6 +274,16 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet, OrderedLong
             throw new IndexOutOfBoundsException("index " + index + " is not in [0; " + (array.length-1) + ']');
         }
         return array[index];
+    }
+
+    @Override
+    public int indexOf(long element) {
+        long[] array = this.array;
+        int search = binarySearch0(array, 0, array.length, element);
+        if (search < -1) {
+            search = -1;
+        }
+        return search;
     }
 
     @Override

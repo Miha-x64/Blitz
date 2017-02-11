@@ -7,13 +7,6 @@ package net.aquadc.blitz;
 public interface LongSet extends PrimitiveSet<Long> {
 
     /**
-     * Returns element's index. It's okay to lose indices after mutation.
-     * @param element    element to search for
-     * @return {@code element}'s index or -1 if not found
-     */
-    int indexOf(long element);
-
-    /**
      * Searches for specified element and returns {@code true} if it was found and false otherwise.
      * @param element    element to search for
      * @return {@code true} if {@code element} was found in this collection, false otherwise

@@ -1,21 +1,29 @@
 package net.aquadc.blitz;
 
 import net.aquadc.blitz.impl.ImmutableLongTreeSet;
+import net.aquadc.blitz.impl.MutableLongHashSet;
 import net.aquadc.blitz.impl.MutableLongTreeSet;
 import org.junit.Test;
 
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by miha on 26.01.17
  */
-public class MutableAndImmutableTest {
+public class MutableTest {
 
     @Test
-    public void mutableTest() {
-        MutableLongSet set = new MutableLongTreeSet();
+    public void mutableLongTreeSet() {
+        mutableTest(new MutableLongTreeSet());
+    }
+    @Test
+    public void mutableLongHashSet() {
+        mutableTest(new MutableLongHashSet());
+    }
+
+    private void mutableTest(MutableLongSet set) {
         assertTrue(set.add(4));
         assertFalse(set.add(4));
         assertTrue(set.addAll(new long[] {9, 2, 8, 11}));
@@ -53,11 +61,32 @@ public class MutableAndImmutableTest {
         assertFalse(set.retainAll(new MutableLongTreeSet(new long[] {65, 35, 11, 64, 8, 9, 4})));
         assertTrue(set.retainAll(new MutableLongTreeSet(new long[] {65, 35, 11, 64, 8, 9, 20}))); // rm 4
         assertEquals(3, set.size());
-    }
 
-    @Test
-    public void immutableTest() {
-        // todo!
+        set.removeAll(set.asImmutable());
+        assertEquals(0, set.size());
+        assertFalse(set.contains(0));
+        assertTrue(set.add(0));
+        assertTrue(set.contains(0));
+        assertFalse(set.add(0));
+
+        assertTrue(set.add(1));
+        assertTrue(set.add(2));
+        assertTrue(set.add(3));
+        assertTrue(set.add(4));
+
+        assertTrue(set.contains(0));
+        assertTrue(set.contains(1));
+        assertTrue(set.contains(2));
+        assertTrue(set.contains(3));
+        assertTrue(set.contains(4));
+        assertFalse(set.contains(5));
+        assertFalse(set.contains(6));
+        assertFalse(set.contains(7));
+        assertFalse(set.contains(8));
+
+        assertTrue(set.remove(1));
+        assertFalse(set.contains(1));
+        assertFalse(set.remove(1));
     }
 
 }

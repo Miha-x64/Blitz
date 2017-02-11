@@ -11,4 +11,6 @@ public interface LongIterator {
      * Brings iterator to its initial state including version / modCount.
      */
     void reset();
+
+    // todo: what about 'release()' which allows iterator recycling?
 }

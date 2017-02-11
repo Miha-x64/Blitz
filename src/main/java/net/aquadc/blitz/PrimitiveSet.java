@@ -27,7 +27,7 @@ public interface PrimitiveSet<E> {
     /**
      * Checks for equality
      * @param other    any object
-     * @return true, if given object is a Set of the same element type ({@code E}) and with same contents // mutableCollection.equals(immutableCollection) = ??
+     * @return true, if given object is a Set of the same element type ({@code E}) and with same contents
      */
     boolean equals(Object other);
 
