@@ -44,7 +44,6 @@ interface ImmutableLongSet extends LongSet {
 ### Both interfaces derive these ones
 ```java
 interface LongSet extends PrimitiveSet<Long> {
-    int indexOf(long element);
     boolean contains(long element);
     boolean containsAll(long[] elements);
     boolean containsAll(LongSet elements);
@@ -84,15 +83,14 @@ is suffocating on `System.arraycopy()`
 
 ## Threading
 
-`MutableLongTreeSet` is absolutely **not** thread-safe.
+`MutableLong*Set`s are absolutely **not** thread-safe.
 In multithreaded environment, use immutable collections,
-or drop me a line and I will implement `ConcurrentLongHashSet`.
+or drop me a line and I will implement
+`ConcurrentLongHashSet` or `COWLongTreeSet`.
 
-## In progress
-
-* fast MutableLongHashSet
 
 ## To do
 
 * Memory benchmarks
-* ImmutableLongHashSet which finds the best hashing algorithm for the fastest access
+* [questionable] ImmutableLongHashSet which finds the best hashing algorithm
+for the fastest possible access
