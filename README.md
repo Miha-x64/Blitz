@@ -71,6 +71,14 @@ public interface PrimitiveSet<E> {
 
 ![insertions](benchmarks/insersions.png)
 
+TreeSets are out of scale,
+our array-based MutableLongTreeSet hangs on `System.arraycopy()`
+
+ Insertions         | 20k | 50k | 100k
+--------------------|-----|-----|-----
+ MutableLongTreeSet | 59  | 474 | 1872
+ TreeSet            | 13  | 34  | 60
+
 ![searches](benchmarks/searches.png)
 
 ## Threading
