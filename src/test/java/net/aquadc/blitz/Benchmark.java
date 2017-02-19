@@ -5,10 +5,10 @@ import net.aquadc.blitz.impl.MutableLongTreeSet;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
-import java.util.TreeSet;
+import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 /**
  * Created by miha on 02.02.17
@@ -21,15 +21,104 @@ public class Benchmark {
     }
 
     @Test
-    public void benchmark() {
+    public void memoryBenchmark() throws Exception {
+        Instrumentation instr = (Instrumentation)
+                Class.forName("InstrumentationProvider").getMethod("getInstrumentation").invoke(null, (Object[]) null);
+
+        int seed = "memory".hashCode();
+        System.out.println("# Memory");
+        for (int items : new int[] {0, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10_000, 20_000, 50_000, 100_000}) {
+            System.out.println("## " + items + " items");
+            MutableLongSet set = new MutableLongTreeSet();
+            populateMls(set, items, seed, false);
+            showMemory(instr, set);
+
+            set = new MutableLongHashSet();
+            populateMls(set, items, seed, false);
+            showMemory(instr, set);
+
+            Set<Long> genericSet = new TreeSet<>();
+            populateGenericSetOfLongs(genericSet, items, seed, false);
+            showMemory(instr, genericSet);
+
+            genericSet = new HashSet<>();
+            populateGenericSetOfLongs(genericSet, items, seed, false);
+            showMemory(instr, genericSet);
+        }
+    }
+
+    private void showMemory(Instrumentation instr, Object object) {
+        System.out.println(object.getClass().getSimpleName() + " size: " + getObjectDeepSize(instr, object, null));
+    }
+
+    private long getObjectDeepSize(Instrumentation instr, Object object, Set<Object> exclude) {
+        if (exclude == null) {
+            exclude = new HashSet<>();
+        }
+
+        if (!exclude.add(object)) {
+//            System.out.println("skipping " + object);
+            return 0; // already calculated
+        }
+        Class klass = object.getClass();
+        if (klass == Class.class || klass.isEnum()) {
+            return 0;
+        }
+        if (klass.isArray()) {
+            if (klass.getComponentType().isPrimitive()) {
+                // primitive array size is straightforward
+                System.out.println(object + " is a primitive array, bytes: " + instr.getObjectSize(object));
+                return instr.getObjectSize(object);
+            }
+            // calculate object array deep size
+            long deep = getArrayDeepSize(instr, (Object[]) object, exclude);
+            System.out.println(object + " is object array, bytes: " + deep);
+            return deep;
+        }
+
+        // calculate object deep size
+        long size = instr.getObjectSize(object);
+        Field[] fields = klass.getDeclaredFields();
+//        System.out.println(object + " is " + klass);
+        for (Field f : fields) {
+            if ((f.getModifiers() & Modifier.STATIC) == Modifier.STATIC) continue;
+            Class type = f.getType();
+            if (type.isPrimitive()) continue;
+
+            try {
+                f.setAccessible(true);
+                Object o = f.get(object);
+//                System.out.println(f + " = " + o);
+                if (o == null) continue;
+
+                size += getObjectDeepSize(instr, o, exclude);
+            } catch (IllegalAccessException e) {
+                throw new AssertionError(e);
+            }
+        }
+        return size;
+    }
+
+    private long getArrayDeepSize(Instrumentation instr, Object[] array, Set<Object> exclude) {
+        long size = instr.getObjectSize(array);
+        for (Object element : array) {
+            if (element == null) continue;
+
+            size += getObjectDeepSize(instr, array, exclude);
+        }
+        return size;
+    }
+
+    @Test
+    public void preformanceBenchmark() {
         System.out.println("# insertions");
         int seed = "insertions".hashCode();
         for (int items : new int[] {20, 50, 100, 200, 500, 1000, 2000, 5000, 10_000, 20_000, 50_000, 100_000}) {
             System.out.println("## " + items + " items");
             populateMls(new MutableLongTreeSet(), items, seed, true);
             populateMls(new MutableLongHashSet(), items, seed, true);
-            populateGenericSetOfLongs(new TreeSet<>(), items, seed, true);
-            populateGenericSetOfLongs(new HashSet<>(), items, seed, true);
+            populateGenericSetOfLongs(new TreeSet<Long>(), items, seed, true);
+            populateGenericSetOfLongs(new HashSet<Long>(), items, seed, true);
         }
 
         System.out.println("# searches");
@@ -37,8 +126,8 @@ public class Benchmark {
             System.out.println("## " + items + " items");
             mlsContains(new MutableLongTreeSet(), items);
             mlsContains(new MutableLongHashSet(), items);
-            runContainsTestOnGenericSet(new TreeSet<>(), items);
-            runContainsTestOnGenericSet(new HashSet<>(), items);
+            runContainsTestOnGenericSet(new TreeSet<Long>(), items);
+            runContainsTestOnGenericSet(new HashSet<Long>(), items);
         }
     }
 
