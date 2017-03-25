@@ -2,8 +2,8 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="1.7">
-      <module name="blitz_main" target="1.7" />
-      <module name="blitz_test" target="1.7" />
+      <module name="blitz_main" target="1.6" />
+      <module name="blitz_test" target="1.6" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
