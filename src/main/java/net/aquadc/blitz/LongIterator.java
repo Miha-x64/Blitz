@@ -8,9 +8,7 @@ public interface LongIterator {
     long next();
 
     /**
-     * Brings iterator to its initial state including version / modCount.
+     * Brings iterator to its initial state including version / modCount, position, etc.
      */
     void reset();
-
-    // todo: what about 'release()' which allows iterator recycling?
 }
