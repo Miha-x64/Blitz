@@ -10,7 +10,7 @@ API is quite experimental and is a subject to change.
 ## API
 
 ### MutableLongSet
-(implementation: MutableLongTreeSet)
+(implementation: `MutableLongHashSet`, `MutableLongTreeSet`)
 ```java
 interface MutableLongTreeSet extends LongSet {
     boolean add(long element);
@@ -27,7 +27,7 @@ interface MutableLongTreeSet extends LongSet {
 ```
 
 ### ImmutableLongSet
-(implementation: ImmutableLongTreeSet)
+(implementation: `ImmutableLongTreeSet`)
 ```java
 interface ImmutableLongSet extends LongSet {
     ImmutableLongSet with(long element);
