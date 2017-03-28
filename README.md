@@ -10,7 +10,7 @@ API is quite experimental and is a subject to change.
 ## API
 
 ### MutableLongSet
-(implementation: `MutableLongHashSet`, `MutableLongTreeSet`)
+(implementations: `MutableLongHashSet`, `MutableLongTreeSet`)
 ```java
 interface MutableLongTreeSet extends LongSet {
     boolean add(long element);
@@ -66,6 +66,37 @@ public interface PrimitiveSet<E> {
 }
 ```
 
+## Kotlin
+This library contains operator overloads
+and functional-style bulk operations for Kotlin.
+```kt
+// factories
+mutableLongSetOf()
+immutableLongSetOf()
+LongArray.toImmutableLongSet()
+LongArray.toMutableLongSet()
+
+// contains() operator bindings
+Long/LongArray/LongSet in LongSet
+
+// bulk operations
+LongSet.single[OrDefault]()
+LongSet.filtered[Not]()
+LongSet.filter[Not]To()
+LongSet.forEach(), LongSet.onEach()
+LongSet.mapToLongs()
+LongSet.joinTo[String]()
+LongSet.average(), LongSet.sum()
+
+// operations with mutable sets
+MutableLongSet += Long/LongArray/LongSet
+MutableLongSet -= Long/LongArray/LongSet
+
+// operations with immutable sets
+ImmutableLongSet + Long/LongArray/LongSet: ImmutableLongSet
+ImmutableLongSet - Long/LongArray/LongSet: ImmutableLongSet
+```
+
 ## Performance
 
 ![insertions](benchmarks/insersions.png)
@@ -92,5 +123,5 @@ or drop me a line and I will implement
 ## To do
 
 * Memory benchmarks
-* [questionable] ImmutableLongHashSet which finds the best hashing algorithm
+* ImmutableLongHashSet which [questionable] finds the best hashing algorithm
 for the fastest possible access

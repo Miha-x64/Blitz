@@ -19,8 +19,9 @@ inline fun immutableLongSetOf(): ImmutableLongSet = ImmutableLongTreeSet.empty()
 inline fun immutableLongSetOf(element: Long): ImmutableLongSet = ImmutableLongTreeSet.singleton(element)
 inline fun immutableLongSetOf(vararg elements: Long): ImmutableLongSet = ImmutableLongTreeSet.from(elements)
 
-inline fun Long.toLongSet(): ImmutableLongSet = ImmutableLongTreeSet.singleton(this)
-inline fun LongArray.toLongSet(): ImmutableLongSet = ImmutableLongTreeSet.from(this)
+inline fun Long.toImmutableLongSet(): ImmutableLongSet = ImmutableLongTreeSet.singleton(this)
+inline fun LongArray.toImmutableLongSet(): ImmutableLongSet = ImmutableLongTreeSet.from(this)
+inline fun LongArray.toMutableLongSet(): MutableLongSet = MutableLongHashSet(this)
 
 // common
 
