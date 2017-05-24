@@ -72,6 +72,11 @@ inline fun <T> Collection<T>.mapToLongs(mapToLong: (T) -> Long) =
             forEach { t -> set.add(mapToLong(t)) }
         }
 
+inline fun <T> Array<T>.mapToLongs(mapToLong: (T) -> Long) =
+        MutableLongHashSet(size).also { set ->
+            forEach { t -> set.add(mapToLong(t)) }
+        }
+
 inline fun LongSet.joinToString(
         separator: CharSequence = ", ",
         prefix: CharSequence = "",
