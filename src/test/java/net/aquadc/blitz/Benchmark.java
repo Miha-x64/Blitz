@@ -1,14 +1,13 @@
 package net.aquadc.blitz;
 
-import net.aquadc.blitz.impl.MutableLongHashSet;
-import net.aquadc.blitz.impl.MutableLongTreeSet;
 import org.junit.Before;
-import org.junit.Test;
 
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * Created by miha on 02.02.17
@@ -20,10 +19,10 @@ public class Benchmark {
         Thread.sleep(300);
     }
 
-    @Test
+    /*@Test
     public void memoryBenchmark() throws Exception {
-        Instrumentation instr = (Instrumentation)
-                Class.forName("InstrumentationProvider").getMethod("getInstrumentation").invoke(null, (Object[]) null);
+//        Instrumentation instr = (Instrumentation)
+//                Class.forName("InstrumentationProvider").getMethod("getInstrumentation").invoke(null, (Object[]) null);
 
         int seed = "memory".hashCode();
         System.out.println("# Memory");
@@ -31,21 +30,21 @@ public class Benchmark {
             System.out.println("## " + items + " items");
             MutableLongSet set = new MutableLongTreeSet();
             populateMls(set, items, seed, false);
-            showMemory(instr, set);
+//            showMemory(instr, set);
 
             set = new MutableLongHashSet();
             populateMls(set, items, seed, false);
-            showMemory(instr, set);
+//            showMemory(instr, set);
 
             Set<Long> genericSet = new TreeSet<>();
             populateGenericSetOfLongs(genericSet, items, seed, false);
-            showMemory(instr, genericSet);
+//            showMemory(instr, genericSet);
 
             genericSet = new HashSet<>();
             populateGenericSetOfLongs(genericSet, items, seed, false);
-            showMemory(instr, genericSet);
+//            showMemory(instr, genericSet);
         }
-    }
+    }*/
 
     private void showMemory(Instrumentation instr, Object object) {
         System.out.println(object.getClass().getSimpleName() + " size: " + getObjectDeepSize(instr, object, null));
@@ -109,8 +108,8 @@ public class Benchmark {
         return size;
     }
 
-    @Test
-    public void preformanceBenchmark() {
+    /*@Test
+    public void performanceBenchmark() {
         System.out.println("# insertions");
         int seed = "insertions".hashCode();
         for (int items : new int[] {20, 50, 100, 200, 500, 1000, 2000, 5000, 10_000, 20_000, 50_000, 100_000}) {
@@ -129,7 +128,7 @@ public class Benchmark {
             runContainsTestOnGenericSet(new TreeSet<Long>(), items);
             runContainsTestOnGenericSet(new HashSet<Long>(), items);
         }
-    }
+    }*/
 
     private void mlsContains(MutableLongSet set, int items) {
         populateMls(set, items, "reads".hashCode(), false);

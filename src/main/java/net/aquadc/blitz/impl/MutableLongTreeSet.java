@@ -27,18 +27,15 @@ public final class MutableLongTreeSet implements MutableLongSet, OrderedLongSet,
      * @param initialSize    allocate space for {@code initialSize} elements.
      */
     public MutableLongTreeSet(int initialSize) {
+        if (initialSize < 0) {
+            throw new IllegalArgumentException("initialSize must be non-negative.");
+        }
         if (initialSize == 0) {
             longs = EMPTY;
             // size = 0
         } else {
             // allocate exactly what client says: it might be e. g. 1 so don't over-allocate
-            if (initialSize == 4 || initialSize == 8) { // todo: pooled sizes here
-                longs = allocate(initialSize); // pick up from pool
-                // size = 0
-            } else {
-                longs = new long[initialSize];
-                // size = 0
-            }
+            longs = new long[initialSize];
         }
     }
 
@@ -249,10 +246,6 @@ public final class MutableLongTreeSet implements MutableLongSet, OrderedLongSet,
             size++;
         }
 
-        if (size != newSize) { // fixme rm
-            throw new AssertionError(size + " != " + newSize);
-        }
-
         this.longs = longs;
         this.size = size;
         return true;
@@ -294,10 +287,6 @@ public final class MutableLongTreeSet implements MutableLongSet, OrderedLongSet,
 
             insert(longs, -(index + 1), size, element);
             size++;
-        }
-
-        if (size != newSize) { // fixme rm
-            throw new AssertionError(size + " != " + newSize);
         }
 
         this.longs = longs;

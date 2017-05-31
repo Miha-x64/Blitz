@@ -3,8 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/blitz.iml" filepath="$PROJECT_DIR$/.idea/modules/blitz.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/blitz_main.iml" filepath="$PROJECT_DIR$/.idea/modules/blitz_main.iml" group="blitz" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/blitz_test.iml" filepath="$PROJECT_DIR$/.idea/modules/blitz_test.iml" group="blitz" />
     </modules>
   </component>
 </project>
