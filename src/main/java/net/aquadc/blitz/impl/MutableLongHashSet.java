@@ -435,6 +435,9 @@ public final class MutableLongHashSet implements MutableLongSet {
             this.value = val;
             this.next = next;
         }
+        @Override public String toString() {
+            return "Node@" + Integer.toHexString(hashCode()) + "(" + value + ", " + next + ")";
+        }
     }
 
 }

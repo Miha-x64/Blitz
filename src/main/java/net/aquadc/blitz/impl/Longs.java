@@ -2,6 +2,8 @@ package net.aquadc.blitz.impl;
 
 import net.aquadc.blitz.OrderedLongSet;
 
+import java.util.concurrent.atomic.AtomicReferenceArray;
+
 /**
  * Created by mike on 25.01.17
  */
@@ -49,8 +51,6 @@ final class Longs {
 
         newLongs[insertionIndex] = value;
 //            System.out.println(l + " inserted at " + pos + " with array expansion, " + Arrays.toString(longs) + " -> " + Arrays.toString(newLongs));
-
-        free(array);
 
         return newLongs;
     }
@@ -114,12 +114,13 @@ final class Longs {
         return hashCode;
     }
 
+    private static final AtomicReferenceArray<long[]> arrays = new AtomicReferenceArray<>(10);
     static long[] allocate(int size) {
         int i = 4;
         while (i < size) {
             i <<= 1;
         }
-//        Log.e("MutableLongTreeSet", "allocated long[" + i + ']'); // fixme
+
         return new long[i];
     }
 
@@ -130,12 +131,6 @@ final class Longs {
             }
         }
         return true;
-    }
-
-    static void free(long[] array) {
-        // no-op, hello, it's JVM ;)
-        // todo: pooling
-//        Log.e("MutableLongTreeSet", "long[" + array.length + "] is breaking free!"); // fixme
     }
 
 }
