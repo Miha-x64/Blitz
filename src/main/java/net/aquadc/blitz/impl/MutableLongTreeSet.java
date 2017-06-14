@@ -186,9 +186,13 @@ public final class MutableLongTreeSet implements MutableLongSet, OrderedLongSet,
 
     @Override
     public boolean add(long l) {
+        version++;
+        return addInternal(l);
+    }
+
+    private boolean addInternal(long l) {
         int index = binarySearch0(longs, 0, size, l);
         if (index >= 0) {
-            version++; // detect not only true insertions, but also insertion attempts
             return false; // already exists
         }
 
@@ -197,8 +201,6 @@ public final class MutableLongTreeSet implements MutableLongSet, OrderedLongSet,
     }
 
     private void insertAt(int index, long value) {
-        version++;
-
         long[] longs = this.longs;
         int size = this.size;
 
@@ -211,44 +213,15 @@ public final class MutableLongTreeSet implements MutableLongSet, OrderedLongSet,
         this.size = newSize;
     }
 
-    @Override // so sloooow...
+    @Override
     public boolean addAll(long[] elements) {
         version++;
 
-        int newElements = 0;
-        for (int i = 0, size = elements.length; i < size; i++) {
-            long element = elements[i];
-            if (!contains(element) && Longs.indexOf(elements, element) == i) {
-                newElements++; //     ^ guarantees that it is a first occurrence of an element
-            }
+        boolean changed = false;
+        for (long l : elements) {
+            changed |= addInternal(l);
         }
-
-        if (newElements == 0) {
-            return false; // all elements are already in this collection
-        }
-
-        long[] longs = this.longs;
-        int size = this.size;
-        int newSize = size + newElements;
-        if (longs.length < newSize) {
-            long[] newLongs = allocate(newSize);
-            System.arraycopy(longs, 0, newLongs, 0, size);
-            longs = newLongs;
-        }
-
-        for (long element : elements) {
-            int index = binarySearch0(longs, 0, size, element);
-            if (index >= 0) {
-                continue;
-            }
-
-            insert(longs, -(index + 1), size, element);
-            size++;
-        }
-
-        this.longs = longs;
-        this.size = size;
-        return true;
+        return changed;
     }
 
     @Override
@@ -256,42 +229,12 @@ public final class MutableLongTreeSet implements MutableLongSet, OrderedLongSet,
         // copy of {@link this#addAll(long[])}, keep in sync
         version++;
 
-        int newElements = 0;
+        boolean changed = false;
         LongIterator itr = elements.iterator();
         while (itr.hasNext()) {
-            if (!contains(itr.next())) {
-                newElements++;
-            }
+            changed |= addInternal(itr.next());
         }
-
-        if (newElements == 0) {
-            return false; // all elements are already in this collection
-        }
-
-        long[] longs = this.longs;
-        int size = this.size;
-        int newSize = size + newElements;
-        if (longs.length < newSize) {
-            long[] newLongs = allocate(newSize);
-            System.arraycopy(longs, 0, newLongs, 0, size);
-            longs = newLongs;
-        }
-
-        itr.reset();
-        while (itr.hasNext()) {
-            long element = itr.next();
-            int index = binarySearch0(longs, 0, size, element);
-            if (index >= 0) {
-                continue;
-            }
-
-            insert(longs, -(index + 1), size, element);
-            size++;
-        }
-
-        this.longs = longs;
-        this.size = size;
-        return true;
+        return changed;
     }
 
     @Override
@@ -421,6 +364,8 @@ public final class MutableLongTreeSet implements MutableLongSet, OrderedLongSet,
 
     @Override
     public int addOrRemove(long element) {
+        version++;
+
         int index = binarySearch0(longs, 0, size, element);
         if (index >= 0) {
             // already contains, remove
