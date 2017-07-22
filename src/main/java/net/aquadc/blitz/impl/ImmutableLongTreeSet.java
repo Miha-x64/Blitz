@@ -38,6 +38,29 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet, OrderedLong
         return array.length == 0;
     }
 
+    private String toString;
+    @Override
+    public String toString() {
+        int size = array.length;
+        if (size == 0) {
+            return "[]";
+        }
+
+        if (toString != null) {
+            return toString;
+        }
+
+        StringBuilder sb = new StringBuilder(size * 5); // for 3-digit numbers ;)
+        sb.append('[');
+        boolean first = true;
+        for (long item : array) {
+            if (first) first = false;
+            else sb.append(", ");
+            sb.append(item);
+        }
+        return toString = sb.append(']').toString(); // assignment-as-expression, he-he
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
