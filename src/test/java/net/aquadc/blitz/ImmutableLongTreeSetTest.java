@@ -5,7 +5,9 @@ import org.junit.Test;
 
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 
 /**
  * Created by miha on 26.01.17
@@ -94,6 +96,31 @@ public class ImmutableLongTreeSetTest {
         assertTrue(ImmutableLongTreeSet.from(new long[] {0, 1}).containsAny(ImmutableLongTreeSet.from(new long[] {0})));
         assertTrue(ImmutableLongTreeSet.from(new long[] {0, 1}).containsAny(ImmutableLongTreeSet.from(new long[] {5, 8, 1})));
         assertFalse(ImmutableLongTreeSet.from(new long[] {0, 1}).containsAny(ImmutableLongTreeSet.from(new long[] {5, 8})));
+    }
+
+    // own Immutable*'s  tests
+
+    @Test
+    public void withWithoutText() {
+        ImmutableLongSet set = ImmutableLongTreeSet.empty();
+        assertArrayEquals(new long[] {}, set.copyToArray());
+        set = set.with(1);
+        assertEquals(1, set.size());
+        assertArrayEquals(new long[] {1}, set.copyToArray());
+        set = set.with(2);
+        assertEquals(2, set.size());
+        assertArrayEquals(new long[] {1, 2}, set.copyToArray());
+        set = set.with(2);
+        assertEquals(2, set.size());
+        assertArrayEquals(new long[] {1, 2}, set.copyToArray());
+        set = set.without(1);
+        assertEquals(1, set.size());
+        assertArrayEquals(new long[] {2}, set.copyToArray());
+        set = set.without(2);
+        assertEquals(0, set.size());
+        assertArrayEquals(new long[] {}, set.copyToArray());
+
+        assertSame(set, ImmutableLongTreeSet.empty());
     }
 
 }

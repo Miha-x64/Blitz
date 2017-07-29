@@ -206,18 +206,20 @@ public final class ImmutableLongTreeSet implements ImmutableLongSet, OrderedLong
     public ImmutableLongSet without(long element) {
         long[] array = this.array;
         int length = array.length;
-        int index = binarySearch0(array, 0, length, element);
-        if (index < 0) {
+        int removeAt = binarySearch0(array, 0, length, element);
+        if (removeAt < 0) {
             return this;
         }
 
+        if (length == 1) return EMPTY; // new length will be 0, preserve identity
+
         int newLength = length - 1;
         long[] newArray = new long[newLength];
-        if (index != 0) {
-            System.arraycopy(array, 0, newArray, 0, index);
+        if (removeAt != 0) { // copy head
+            System.arraycopy(array, 0, newArray, 0, removeAt);
         }
-        if (index != newLength) {
-            System.arraycopy(array, index, newArray, index - 1, newLength - index);
+        if (removeAt != newLength) { // copy tail
+            System.arraycopy(array, removeAt + 1, newArray, removeAt, newLength - removeAt);
         }
         return new ImmutableLongTreeSet(newArray);
     }
