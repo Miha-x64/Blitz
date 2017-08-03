@@ -142,3 +142,36 @@ inline operator fun ImmutableLongSet.plus(l: LongSet): ImmutableLongSet = withAl
 inline operator fun ImmutableLongSet.minus(l: Long): ImmutableLongSet = without(l)
 inline operator fun ImmutableLongSet.minus(l: LongArray): ImmutableLongSet = withoutAll(l)
 inline operator fun ImmutableLongSet.minus(l: LongSet): ImmutableLongSet = withoutAll(l)
+
+// map, fold
+
+inline fun <R> LongSet.map(transform: (Long) -> R): List<R> {
+    return mapTo(ArrayList(size()), transform)
+}
+
+inline fun <R, C : MutableCollection<in R>> LongSet.mapTo(destination: C, transform: (Long) -> R): C {
+    for (item in this)
+        destination.add(transform(item))
+    return destination
+}
+
+inline fun LongSet.mapToLongArray(transform: (Long) -> Long): LongArray {
+    val destination = LongArray(size())
+    var index = 0
+    for (item in this) {
+        destination[index++] = transform(item)
+    }
+    return destination
+}
+
+inline fun <R> LongSet.fold(initial: R, operation: (acc: R, Long) -> R): R {
+    var accumulator = initial
+    for (element in this) accumulator = operation(accumulator, element)
+    return accumulator
+}
+
+inline fun LongSet.foldToLong(initial: Long, operation: (acc: Long, Long) -> Long): Long {
+    var accumulator = initial
+    for (element in this) accumulator = operation(accumulator, element)
+    return accumulator
+}
