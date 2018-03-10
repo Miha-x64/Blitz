@@ -2,6 +2,7 @@ package net.aquadc.blitz.impl;
 
 import net.aquadc.blitz.*;
 
+import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
 
@@ -10,33 +11,65 @@ import java.util.NoSuchElementException;
  */
 public final class MutableLongHashSet implements MutableLongSet {
 
-    private static final float LOAD_FACTOR = .75F;
+    private static final int DEFAULT_SIZE = 4;
+    private static final float DEFAULT_LOAD_FACTOR = .95f;
 
     public MutableLongHashSet() {
-        buckets = new Node[4];
+        this(DEFAULT_SIZE, DEFAULT_LOAD_FACTOR);
+    }
+
+    public MutableLongHashSet(float loadFactor) {
+        this(DEFAULT_SIZE, loadFactor);
     }
 
     public MutableLongHashSet(int size) {
-        int actualSize = 4;
+        this(size, DEFAULT_LOAD_FACTOR);
+    }
+
+    public MutableLongHashSet(int size, float loadFactor) {
+        int actualSize = DEFAULT_SIZE;
         while (actualSize < size) {
             actualSize <<= 1;
         }
-        buckets = new Node[actualSize];
+        this.buckets = new long[actualSize];
+        this.middle = actualSize / 2;
+        this.loadFactor = checkLoaf(loadFactor);
     }
 
     public MutableLongHashSet(long[] elements) {
-        buckets = new Node[4];
+        this(elements, DEFAULT_LOAD_FACTOR);
+    }
+
+    public MutableLongHashSet(long[] elements, float loadFactor) {
+        this.buckets = new long[DEFAULT_SIZE];
+        this.middle = 8;
+        this.loadFactor = checkLoaf(loadFactor);
         addAll(elements);
     }
 
     public MutableLongHashSet(LongSet original) {
-        this(original.size());
+        this(original.size(), DEFAULT_LOAD_FACTOR);
         addAll(original);
     }
 
-    /*pkg*/ Node[] buckets;
+    public MutableLongHashSet(LongSet original, float loadFactor) {
+        this(original.size(), loadFactor);
+        addAll(original);
+    }
+
+    private float checkLoaf(float loaf) {
+        if (loaf > 0 && loaf < 1)
+            return loaf;
+
+        throw new IllegalArgumentException("loadFactor must be > 0 and < 1, " + loaf + " given");
+    }
+
+    /*pkg*/ boolean containsZero;
+    /*pkg*/ long[] buckets;
     /*pkg*/ int size;
+    private int middle;
     /*pkg*/ int version;
+    private final float loadFactor;
 
     // PrimitiveSet
 
@@ -57,15 +90,21 @@ public final class MutableLongHashSet implements MutableLongSet {
         StringBuilder sb = new StringBuilder(size * 5); // for 3-digit numbers ;)
         sb.append('[');
         boolean first = true;
-        for (Node n : buckets) {
-            Node o = n;
-            while (o != null) {
-                if (first) first = false;
-                else sb.append(", ");
-                sb.append(o.value);
-                o = o.next;
-            }
+
+        if (containsZero) {
+            sb.append('0');
+            first = false;
         }
+
+        for (long l : buckets) {
+            if (l == 0) continue;
+
+            if (first) first = false;
+            else sb.append(", ");
+
+            sb.append(l);
+        }
+
         return sb.append(']').toString();
     }
 
@@ -83,16 +122,11 @@ public final class MutableLongHashSet implements MutableLongSet {
         return size == ls.size() && containsAll(ls);
     }
 
-    @Override // LOL, differently sized sets with the same contents are going to have different hash codes
+    @Override
     public int hashCode() {
         int hash = 0;
-        for (Node n : buckets) {
-            Node o = n;
-            while (o != null) {
-                long value = o.value;
-                hash += (int) (value ^ (value >>> 32));
-                o = o.next;
-            }
+        for (long value : buckets) {
+            hash += (int) (value ^ (value >>> 32));
         }
         return hash;
     }
@@ -100,13 +134,37 @@ public final class MutableLongHashSet implements MutableLongSet {
     // LongSet
 
     public boolean contains(long element) {
-        Node bucket = buckets[bucketOf(element)];
-        while (bucket != null) {
-            if (bucket.value == element) {
-                return true;
+        if (element == 0)
+            return containsZero;
+
+        int idx = bucketOf(element);
+        long value = buckets[idx];
+        if (value == element)
+            return true;
+
+        if (idx > middle) {
+            final int limit = idx - middle/4;
+            while (idx > limit) {
+                idx--;
+                if (buckets[idx] == element)
+                    return true;
+
+                if (buckets[idx] == 0)
+                    return false;
             }
-            bucket = bucket.next;
+        } else {
+            final int limit = idx + middle/4;
+            while (idx < limit) {
+                idx++;
+                if (buckets[idx] == element)
+                    return true;
+
+                if (buckets[idx] == 0) {
+                    return false;
+                }
+            }
         }
+
         return false;
     }
 
@@ -165,18 +223,26 @@ public final class MutableLongHashSet implements MutableLongSet {
 
     @Override
     public long[] copyToArray() {
+        if (size == 0)
+            return Longs.EMPTY;
+
         long[] array = new long[size];
+
         int index = 0;
-        for (Node n : buckets) {
-            Node o = n;
-            while (o != null) {
-                array[index++] = o.value;
-                o = o.next;
+        for (long l : buckets) {
+            if (l != 0) {
+                array[index++] = l;
             }
         }
-        if (array.length != index) {
-            throw new AssertionError(); // todo rm
+
+        if (containsZero) {
+            array[index++] = 0;
         }
+
+        if (index != size) {
+            throw new AssertionError();
+        }
+
         return array;
     }
 
@@ -212,25 +278,80 @@ public final class MutableLongHashSet implements MutableLongSet {
     }
 
     private boolean addInternal(long element) {
-        int bucketIndex = bucketOf(element);
-        Node node = buckets[bucketIndex];
-        while (node != null) {
-            if (node.value == element) {
+        if (element == 0) {
+            if (containsZero) {
                 return false;
+            } else {
+                size++;
+                return containsZero = true;
             }
-            node = node.next;
         }
 
-        int newSize = size + 1;
-        int bucketsRequired = (int) (newSize / LOAD_FACTOR);
-        if (bucketsRequired > buckets.length) {
-            resize(bucketsRequired);
-            bucketIndex = bucketOf(element); // update index after resize
+        switch (putIntoBucket(element)) {
+            case 0:
+                return false;
+
+            case 1:
+                size++;
+                return true;
+
+            case 2:
+                break;
+
+            default:
+                throw new AssertionError();
         }
 
-        buckets[bucketIndex] = new Node(element, buckets[bucketIndex]);
-        size = newSize;
-        return true;
+        // okaaaay, must resize
+
+        long[] oldBuckets = buckets;
+        final int oldSize = oldBuckets.length;
+        buckets = new long[2 * oldSize];
+        middle = oldSize;
+        for (long l : oldBuckets) {
+            putIntoBucket(l);
+        }
+
+        return addInternal(element); // try again
+    }
+
+    private int putIntoBucket(long element) {
+        if (size > loadFactor * buckets.length) return 2;
+        int idx = bucketOf(element);
+        long value = buckets[idx];
+
+        if (value == element)
+            return 0;
+
+        if (idx > middle) {
+            final int limit = idx - middle/4;
+            while (idx > limit) {
+                if (buckets[idx] == element)
+                    return 0;
+
+                if (buckets[idx] == 0) {
+                    buckets[idx] = element;
+                    return 1;
+                }
+
+                idx--;
+            }
+        } else {
+            final int limit = idx + middle/4;
+            while (idx < limit) {
+                if (buckets[idx] == element)
+                    return 0;
+
+                if (buckets[idx] == 0) {
+                    buckets[idx] = element;
+                    return 1;
+                }
+
+                idx++;
+            }
+        }
+
+        return 2; // no space, must resize
     }
 
     @Override
@@ -239,142 +360,167 @@ public final class MutableLongHashSet implements MutableLongSet {
         return removeInternal(element);
     }
 
-    @Override public boolean removeAll(long[] elements) {
-        return batchRemove(elements, true);
-    }
-
-    @Override public boolean removeAll(LongSet elements) {
-        return batchRemove(elements, true);
-    }
-
-    @Override public boolean retainAll(long[] elements) {
-        return batchRemove(elements, false);
-    }
-
-    @Override public boolean retainAll(LongSet elements) {
-        return batchRemove(elements, false);
-    }
-
-    private boolean batchRemove(long[] elements, boolean remove) {
+    @Override
+    public boolean removeAll(long[] elements) {
         version++;
-
         boolean changed = false;
-        Node[] buckets = this.buckets;
-        for (Node bucket : buckets) {
-            Node n = bucket;
-            while (n != null) {
-                long value = n.value;
-                int index = Longs.indexOf(elements, value);
-                if (index >= 0 == remove) {
-                    removeInternal(value);
-                    changed = true;
-                }
-                n = n.next;
+        for (long l : elements) {
+            changed |= removeInternal(l);
+        }
+        return changed;
+    }
+
+    @Override
+    public boolean removeAll(LongSet elements) {
+        version++;
+        boolean changed = false;
+        LongIterator itr = elements.iterator();
+        while (itr.hasNext()) {
+            changed |= removeInternal(itr.next());
+        }
+        return changed;
+    }
+
+    @Override
+    public boolean retainAll(long[] elements) {
+        version++;
+        boolean changed = false;
+        if (containsZero && Longs.indexOf(elements, 0) < 0) {
+            // this.contains(0) && !that.contains(0)
+            containsZero = false;
+            changed = true;
+        }
+        for (long l : buckets) {
+            if (l == 0) continue;
+
+            if (Longs.indexOf(elements, l) < 0) {
+                removeInternal(l);
+                changed = true;
             }
         }
         return changed;
     }
 
-    private boolean batchRemove(LongSet elements, boolean remove) {
-        // copy of ^^
+    @Override
+    public boolean retainAll(LongSet elements) {
         version++;
-
         boolean changed = false;
-        Node[] buckets = this.buckets;
-        for (Node bucket : buckets) {
-            Node n = bucket;
-            while (n != null) {
-                long value = n.value;
-                if (elements.contains(value) == remove) {
-                    removeInternal(value);
-                    changed = true;
-                }
-                n = n.next;
+        if (containsZero && !elements.contains(0)) {
+            containsZero = false;
+            changed = true;
+        }
+        for (long l : buckets) {
+            if (l == 0) continue;
+
+            if (!elements.contains(l)) {
+                removeInternal(l);
+                changed = true;
             }
         }
         return changed;
     }
 
     private boolean removeInternal(long element) {
-        int index = bucketOf(element);
-        Node node = buckets[index];
-        if (node == null) {
-            return false;
-        }
-
-        if (node.value == element) {    // bucket: node0 -> node1 -> node2 ...
-            buckets[index] = node.next; // rm node0. bucket: node1 -> node2 ...
-            size--;
-            return true;
-        }
-
-        Node previous = node;
-        while ((node = previous.next) != null) {
-            if (node.value == element) { // bucket: node0 -> node1 -> node2 ...
-                previous.next = node.next; // rm node1: node0 -> node2 ...
+        if (element == 0) {
+            if (!containsZero) {
+                return false;
+            } else {
+                containsZero = false;
                 size--;
                 return true;
             }
-
-            previous = node;
         }
-        return false; // end of the list
+
+        int idx = bucketOf(element);
+        long target = buckets[idx];
+        if (target == 0)
+            return false;
+
+        boolean changed = false;
+        if (idx > middle) {
+            final int limit = idx - middle/4;
+            while (idx > limit) {
+                long value = buckets[idx];
+                if (value == element) {
+                    buckets[idx] = 0;
+                    changed = true;
+                    size--;
+                    continue;
+                }
+
+                if (value == 0)
+                    return changed;
+
+                if (changed) { // values shifted, re-insert it
+                    buckets[idx] = 0;
+                    addInternal(value);
+                }
+
+                idx--;
+            }
+        } else {
+            final int limit = idx + middle/4;
+            while (idx < limit) {
+                long value = buckets[idx];
+                if (value == element) {
+                    buckets[idx] = 0;
+                    changed = true;
+                    size--;
+                    continue;
+                }
+
+                if (value == 0)
+                    return changed;
+
+                if (changed) {
+                    buckets[idx] = 0;
+                    addInternal(value);
+                }
+
+                idx++;
+            }
+        }
+
+        return changed;
     }
 
     @Override
     public MutableLongIterator iterator() {
         return new MutableLongIterator() {
             int currentBucket = -1;
-            Node previousNodeInBucket;
-            Node currentNode;
-
-            int nextElementIndex;
+            int visited = 0;
             int version = MutableLongHashSet.this.version;
             @Override public boolean hasNext() {
-                return nextElementIndex < size;
+                return visited < size;
             }
             @Override public long next() {
                 checkComod();
-                if (nextElementIndex++ == size) {
+
+                if (visited++ == size)
                     throw new NoSuchElementException();
-                }
 
-                Node currentNode = this.currentNode;
-                Node previous = previousNodeInBucket;
-                if (currentNode != null) { // step into linked list if we can
-                    previous = currentNode;
-                    currentNode = currentNode.next;
-                }
-                while (currentNode == null) { // we're in the middle of nowhere, move to next buckets
-                    previous = null;
-                    currentNode = buckets[++currentBucket];
-                }
-                this.currentNode = currentNode;
-                this.previousNodeInBucket = previous;
+                if (containsZero && visited == size)
+                    return 0;
 
-                return currentNode.value;
+                while (true)
+                    if (buckets[++currentBucket] != 0)
+                        return buckets[currentBucket];
             }
             @Override public void remove() {
                 checkComod();
-                if (currentNode == null) {
+                if (currentBucket < 0) {
                     throw new IllegalStateException("Iterator is not initialized.");
                 }
 
+                if (!MutableLongHashSet.this.removeInternal(buckets[currentBucket]))
+                    throw new AssertionError();
+
                 version++;
-                size--;
-                nextElementIndex--;
-                if (previousNodeInBucket == null) {
-                    buckets[currentBucket] = currentNode.next; // unlink head
-                } else {
-                    previousNodeInBucket = currentNode.next; // unlink ordinary bucket
-                }
-                MutableLongHashSet.this.version++; // lol, iterator removing element from set without set's help
+                MutableLongHashSet.this.version++;
             }
             @Override public void reset() {
                 currentBucket = -1;
-                previousNodeInBucket = null;
-                currentNode = null;
-                nextElementIndex = 0;
+                visited = 0;
                 version = MutableLongHashSet.this.version;
             }
             private void checkComod() {
@@ -390,54 +536,23 @@ public final class MutableLongHashSet implements MutableLongSet {
         // todo: may be faster
         version++;
         if (contains(element)) {
-            removeInternal(element);
+            if (!removeInternal(element))
+                throw new AssertionError("failed to remove " + element + ", buckets: " + Arrays.toString(buckets));
             return -1;
         } else {
-            addInternal(element);
+            if (!addInternal(element))
+                throw new AssertionError();
             return +1;
         }
     }
 
     // internal
 
-    private void resize(int requiredSize) {
-        int newSize = 4;
-        while (newSize < requiredSize) {
-            newSize <<= 1;
-        }
-
-//        System.out.println("resizing from " + buckets.length + " to " + newSize);
-
-        Node[] newBuckets = new Node[newSize];
-        Node[] oldBuckets = buckets;
-        for (Node oldBucket : oldBuckets) {
-            while (oldBucket != null) {
-                Node newBucket = oldBucket;
-                oldBucket = oldBucket.next;
-
-                int index = (int) (newSize-1 & newBucket.value); // keep in sync with `bucketOf(long)`
-                newBucket.next = newBuckets[index];
-                newBuckets[index] = newBucket;
-            }
-
-        }
-        buckets = newBuckets;
-    }
-
     private int bucketOf(long element) {
-        return (int) (buckets.length-1 & element);
-    }
-
-    private static final class Node {
-        long value;
-        Node next;
-        private Node(long val, Node next) {
-            this.value = val;
-            this.next = next;
-        }
-        @Override public String toString() {
-            return "Node@" + Integer.toHexString(hashCode()) + "(" + value + ", " + next + ")";
-        }
+        int h = (int) ((element >>> 32) ^ element);
+        h ^= (h >>> 20) ^ (h >>> 12);
+        h ^= (h >>> 7) ^ (h >>> 4);
+        return h & buckets.length-1;
     }
 
 }

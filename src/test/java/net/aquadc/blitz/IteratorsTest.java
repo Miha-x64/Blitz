@@ -5,11 +5,11 @@ import net.aquadc.blitz.impl.MutableLongHashSet;
 import net.aquadc.blitz.impl.MutableLongTreeSet;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Created by miha on 28.01.17
@@ -30,7 +30,7 @@ public class IteratorsTest {
         assertArrayEquals(new long[] {0, 1, 2, 3, 5, 6, 7}, receiver.copyToArray());
         try {
             itr.next();
-            assertTrue(false);
+            fail();
         } catch (NoSuchElementException e) {
             // ok
         }
@@ -54,7 +54,9 @@ public class IteratorsTest {
             }
         }
 
-        assertArrayEquals(new long[] {0, 1, 2, 3, 5, 6, 7}, set.copyToArray());
+        long[] asArray = set.copyToArray();
+        Arrays.sort(asArray);
+        assertArrayEquals(new long[] {0, 1, 2, 3, 5, 6, 7}, asArray);
     }
 
     @Test(expected = ConcurrentModificationException.class)
