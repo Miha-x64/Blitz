@@ -14,7 +14,7 @@ public class InsertBenchmark {
 
     private final Random insRandom = new Random("insert".hashCode());
 
-    @Param({ "MutableLongTreeSet", "MutableLongHashSet", "TreeSet", "HashSet" })
+    @Param({ /* MutableLongTreeSet.add() is too slow */ "MutableLongHashSet", "TreeSet", "HashSet" })
     String setClass;
 
     @Param({
@@ -57,7 +57,7 @@ public class InsertBenchmark {
                         .include(InsertBenchmark.class.getSimpleName())
                         .mode(Mode.AverageTime)
                         .forks(1)
-                        .timeUnit(TimeUnit.MICROSECONDS)
+                        .timeUnit(TimeUnit.NANOSECONDS)
                         .warmupIterations(3)
                         .measurementIterations(3)
                         .build()

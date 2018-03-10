@@ -99,16 +99,12 @@ ImmutableLongSet - Long/LongArray/LongSet: ImmutableLongSet
 
 ## Performance
 
+Insertions are <500 ns, searches are <100 ns average.
+
 ![insertions](benchmarks/insersions.png)
 
-TreeSets are out of scale,
-our array-based MutableLongTreeSet
-is suffocating on `System.arraycopy()`
-
- Collection \ Insertions | 10k | 20k | 50k | 100k | unit
--------------------------|-----|-----|-----|------|-----
- MutableLongTreeSet      | 20  | 59  | 474 | 1872 | ms
- TreeSet                 | 7   | 13  | 34  | 60   | ms
+My MutableLongTreeSet is out of scale since it's 
+array-based and doing `System.arraycopy()` all the time.
 
 ![searches](benchmarks/searches.png)
 
