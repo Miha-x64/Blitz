@@ -439,7 +439,7 @@ public final class MutableLongHashSet implements MutableLongSet {
         boolean changed = false;
         if (idx > middle) {
             final int limit = idx - middle/4;
-            while (idx > limit) {
+            for (; idx > limit; idx--) {
                 long value = buckets[idx];
                 if (value == element) {
                     buckets[idx] = 0;
@@ -453,14 +453,12 @@ public final class MutableLongHashSet implements MutableLongSet {
 
                 if (changed) { // values shifted, re-insert it
                     buckets[idx] = 0;
-                    addInternal(value);
+                    buckets[idx+1] = value;
                 }
-
-                idx--;
             }
         } else {
             final int limit = idx + middle/4;
-            while (idx < limit) {
+            for (; idx < limit; idx++) {
                 long value = buckets[idx];
                 if (value == element) {
                     buckets[idx] = 0;
@@ -474,10 +472,8 @@ public final class MutableLongHashSet implements MutableLongSet {
 
                 if (changed) {
                     buckets[idx] = 0;
-                    addInternal(value);
+                    buckets[idx-1] = value;
                 }
-
-                idx++;
             }
         }
 
