@@ -138,34 +138,26 @@ public final class MutableLongHashSet implements MutableLongSet {
             return containsZero;
 
         int idx = bucketOf(element);
-        long value = buckets[idx];
-        if (value == element)
-            return true;
 
-        if (idx > middle) {
-            final int limit = idx - middle/4;
-            while (idx > limit) {
-                idx--;
-                if (buckets[idx] == element)
-                    return true;
+        // search forward if on the first half,
+        // search backward otherwise.
+        final int direction = idx < middle ? +1 : -1;
+        final int maxSearch = middle / 4; // 1/8 of array
 
-                if (buckets[idx] == 0)
-                    return false;
-            }
-        } else {
-            final int limit = idx + middle/4;
-            while (idx < limit) {
-                idx++;
-                if (buckets[idx] == element)
-                    return true;
+        // don't inline maxSearch ;)
+        final int limit = idx - direction * maxSearch;
 
-                if (buckets[idx] == 0) {
-                    return false;
-                }
-            }
+        for (; idx != limit; idx += direction) {
+            if (buckets[idx] == element)
+                return true;
+
+            if (buckets[idx] == 0)
+                return false;
         }
 
-        return false;
+        // initial idx cannot be equal to limit,
+        // we MUST return from the for-loop above
+        throw new AssertionError();
     }
 
     @Override
