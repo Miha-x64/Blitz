@@ -9,6 +9,9 @@ import java.util.RandomAccess;
 
 import static net.aquadc.blitz.impl.Longs.*;
 
+/**
+ * @deprecated adding to this set takes too much time
+ */
 public final class MutableLongTreeSet implements MutableLongSet, OrderedLongSet, RandomAccess {
 
     private long[] longs;

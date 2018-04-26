@@ -10,8 +10,9 @@ import static net.aquadc.blitz.impl.Longs.*;
 
 /**
  * Created by mike on 25.01.17
+ * @deprecated immutable data structures are cool
+ *             when they're persistent and cheap to copy, this one doesn't
  */
-
 public final class ImmutableLongTreeSet implements ImmutableLongSet, OrderedLongSet, RandomAccess {
 
     private static final ImmutableLongTreeSet EMPTY = new ImmutableLongTreeSet();
