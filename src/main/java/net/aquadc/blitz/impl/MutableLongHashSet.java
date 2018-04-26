@@ -155,9 +155,8 @@ public final class MutableLongHashSet implements MutableLongSet {
                 return false;
         }
 
-        // initial idx cannot be equal to limit,
-        // we MUST return from the for-loop above
-        throw new AssertionError();
+        // not found, limit reached
+        return false;
     }
 
     @Override
