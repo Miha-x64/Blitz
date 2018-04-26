@@ -145,7 +145,7 @@ public final class MutableLongHashSet implements MutableLongSet {
         final int maxSearch = middle / 4; // 1/8 of array
 
         // don't inline maxSearch ;)
-        final int limit = idx - direction * maxSearch;
+        final int limit = idx + direction * maxSearch;
 
         for (; idx != limit; idx += direction) {
             if (buckets[idx] == element)
@@ -309,36 +309,19 @@ public final class MutableLongHashSet implements MutableLongSet {
     private int putIntoBucket(long element) {
         if (size > loadFactor * buckets.length) return 2;
         int idx = bucketOf(element);
-        long value = buckets[idx];
 
-        if (value == element)
-            return 0;
+        final int direction = idx < middle ? +1 : -1;
+        final int maxSearch = middle / 4;
 
-        if (idx > middle) {
-            final int limit = idx - middle/4;
-            while (idx > limit) {
-                if (buckets[idx] == element)
-                    return 0;
+        final int limit = idx + direction * maxSearch;
 
-                if (buckets[idx] == 0) {
-                    buckets[idx] = element;
-                    return 1;
-                }
+        for (; idx != limit; idx += direction) {
+            if (buckets[idx] == element)
+                return 0; // already contains
 
-                idx--;
-            }
-        } else {
-            final int limit = idx + middle/4;
-            while (idx < limit) {
-                if (buckets[idx] == element)
-                    return 0;
-
-                if (buckets[idx] == 0) {
-                    buckets[idx] = element;
-                    return 1;
-                }
-
-                idx++;
+            if (buckets[idx] == 0) {
+                buckets[idx] = element;
+                return 1;
             }
         }
 
@@ -427,44 +410,27 @@ public final class MutableLongHashSet implements MutableLongSet {
         if (target == 0)
             return false;
 
+        final int direction = idx < middle ? +1 : -1;
+        final int maxSearch = middle / 4;
+
+        final int limit = idx + direction * maxSearch;
+
         boolean changed = false;
-        if (idx > middle) {
-            final int limit = idx - middle/4;
-            for (; idx > limit; idx--) {
-                long value = buckets[idx];
-                if (value == element) {
-                    buckets[idx] = 0;
-                    changed = true;
-                    size--;
-                    continue;
-                }
-
-                if (value == 0)
-                    return changed;
-
-                if (changed) { // values shifted, re-insert it
-                    buckets[idx] = 0;
-                    buckets[idx+1] = value;
-                }
+        for (; idx != limit; idx += direction) {
+            long value = buckets[idx];
+            if (value == element) {
+                buckets[idx] = 0;
+                changed = true;
+                size--;
+                continue;
             }
-        } else {
-            final int limit = idx + middle/4;
-            for (; idx < limit; idx++) {
-                long value = buckets[idx];
-                if (value == element) {
-                    buckets[idx] = 0;
-                    changed = true;
-                    size--;
-                    continue;
-                }
 
-                if (value == 0)
-                    return changed;
+            if (value == 0)
+                return changed;
 
-                if (changed) {
-                    buckets[idx] = 0;
-                    buckets[idx-1] = value;
-                }
+            if (changed) { // values shifted, re-insert it
+                buckets[idx] = 0;
+                buckets[idx - direction] = value;
             }
         }
 
