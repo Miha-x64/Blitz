@@ -12,64 +12,34 @@ import java.util.NoSuchElementException;
 public final class MutableLongHashSet implements MutableLongSet {
 
     private static final int DEFAULT_SIZE = 4;
-    private static final float DEFAULT_LOAD_FACTOR = .95f;
+    private static final float LOAD_FACTOR = .95f;
 
     public MutableLongHashSet() {
-        this(DEFAULT_SIZE, DEFAULT_LOAD_FACTOR);
-    }
-
-    public MutableLongHashSet(float loadFactor) {
-        this(DEFAULT_SIZE, loadFactor);
+        this(DEFAULT_SIZE);
     }
 
     public MutableLongHashSet(int size) {
-        this(size, DEFAULT_LOAD_FACTOR);
-    }
-
-    public MutableLongHashSet(int size, float loadFactor) {
         int actualSize = DEFAULT_SIZE;
         while (actualSize < size) {
             actualSize <<= 1;
         }
         this.buckets = new long[actualSize];
-        this.middle = actualSize / 2;
-        this.loadFactor = checkLoaf(loadFactor);
     }
 
     public MutableLongHashSet(long[] elements) {
-        this(elements, DEFAULT_LOAD_FACTOR);
-    }
-
-    public MutableLongHashSet(long[] elements, float loadFactor) {
-        this.buckets = new long[DEFAULT_SIZE];
-        this.middle = 8;
-        this.loadFactor = checkLoaf(loadFactor);
+        this(elements.length);
         addAll(elements);
     }
 
     public MutableLongHashSet(LongSet original) {
-        this(original.size(), DEFAULT_LOAD_FACTOR);
+        this(original.size());
         addAll(original);
-    }
-
-    public MutableLongHashSet(LongSet original, float loadFactor) {
-        this(original.size(), loadFactor);
-        addAll(original);
-    }
-
-    private float checkLoaf(float loaf) {
-        if (loaf > 0 && loaf < 1)
-            return loaf;
-
-        throw new IllegalArgumentException("loadFactor must be > 0 and < 1, " + loaf + " given");
     }
 
     /*pkg*/ boolean containsZero;
     /*pkg*/ long[] buckets;
     /*pkg*/ int size;
-    private int middle;
-    /*pkg*/ int version;
-    private final float loadFactor;
+    /*pkg*/ short version;
 
     // PrimitiveSet
 
@@ -139,6 +109,7 @@ public final class MutableLongHashSet implements MutableLongSet {
 
         int idx = bucketOf(element);
 
+        final int middle = buckets.length / 2;
         // search forward if on the first half,
         // search backward otherwise.
         final int direction = idx < middle ? +1 : -1;
@@ -298,7 +269,6 @@ public final class MutableLongHashSet implements MutableLongSet {
         long[] oldBuckets = buckets;
         final int oldSize = oldBuckets.length;
         buckets = new long[2 * oldSize];
-        middle = oldSize;
         for (long l : oldBuckets) {
             putIntoBucket(l);
         }
@@ -307,9 +277,10 @@ public final class MutableLongHashSet implements MutableLongSet {
     }
 
     private int putIntoBucket(long element) {
-        if (size > loadFactor * buckets.length) return 2;
+        if (size > LOAD_FACTOR * buckets.length) return 2;
         int idx = bucketOf(element);
 
+        final int middle = buckets.length / 2;
         final int direction = idx < middle ? +1 : -1;
         final int maxSearch = middle / 4;
 
@@ -410,6 +381,7 @@ public final class MutableLongHashSet implements MutableLongSet {
         if (target == 0)
             return false;
 
+        final int middle = buckets.length / 2;
         final int direction = idx < middle ? +1 : -1;
         final int maxSearch = middle / 4;
 
@@ -442,7 +414,7 @@ public final class MutableLongHashSet implements MutableLongSet {
         return new MutableLongIterator() {
             int currentBucket = -1;
             int visited = 0;
-            int version = MutableLongHashSet.this.version;
+            short version = MutableLongHashSet.this.version;
             @Override public boolean hasNext() {
                 return visited < size;
             }
