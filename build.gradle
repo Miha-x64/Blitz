@@ -32,6 +32,15 @@ dependencies {
 
     testCompile group: 'junit', name: 'junit', version: '4.11'
     jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.19'
+    jmh group: 'net.sf.trove4j', name: 'trove4j', version: '3.0.3'
+    jmh group: 'com.carrotsearch', name: 'hppc', version: '0.7.3'
+    jmh 'it.unimi.dsi:fastutil:8.1.1'
+    jmh 'com.github.vsonnier:hppcrt:0.7.5'
+    jmh 'com.koloboke:koloboke-api-jdk8:1.0.0'
+    jmh 'com.koloboke:koloboke-impl-jdk8:1.0.0'
+    jmh 'org.eclipse.collections:eclipse-collections-api:9.1.0'
+    jmh 'org.eclipse.collections:eclipse-collections:9.1.0'
+    jmh 'org.agrona:agrona:0.9.18'
 }
 
 jmh {
