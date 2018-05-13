@@ -41,6 +41,7 @@ dependencies {
     jmh 'org.eclipse.collections:eclipse-collections-api:9.1.0'
     jmh 'org.eclipse.collections:eclipse-collections:9.1.0'
     jmh 'org.agrona:agrona:0.9.18'
+    jmh 'org.openjdk.jol:jol-core:0.9'
 }
 
 jmh {
