@@ -12,7 +12,7 @@ import java.util.NoSuchElementException;
 public final class MutableLongHashSet implements MutableLongSet {
 
     private static final int DEFAULT_SIZE = 4;
-    private static final float LOAD_FACTOR = .95f;
+    private static final float LOAD_FACTOR = .8f;
 
     public MutableLongHashSet() {
         this(DEFAULT_SIZE);
