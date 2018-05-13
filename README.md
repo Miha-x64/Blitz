@@ -10,39 +10,15 @@ API is quite experimental and is a subject to change.
 ## API
 
 ### MutableLongSet
-(implementations: `MutableLongHashSet`, `MutableLongTreeSet`)
+(implementation: `MutableLongHashSet`)
 ```java
-interface MutableLongTreeSet extends LongSet {
-    boolean add(long element);
-    boolean addAll(long[] elements);
-    boolean addAll(LongSet elements);
-    boolean remove(long element);
-    boolean removeAll(long[] elements);
-    boolean removeAll(LongSet elements);
-    boolean retainAll(long[] elements);
-    boolean retainAll(LongSet elements);
-    @Override MutableLongIterator iterator();
-    int addOrRemove(long element);
+public interface PrimitiveSet<E> {
+    int size();
+    boolean isEmpty();
+    String toString();
+    boolean equals(Object other);
+    int hashCode();
 }
-```
-
-### ImmutableLongSet
-(implementation: `ImmutableLongTreeSet`)
-```java
-interface ImmutableLongSet extends LongSet {
-    ImmutableLongSet with(long element);
-    ImmutableLongSet withAll(long[] elements);
-    ImmutableLongSet withAll(LongSet elements);
-    ImmutableLongSet without(long element);
-    ImmutableLongSet withoutAll(long[] elements);
-    ImmutableLongSet withoutAll(LongSet elements);
-    ImmutableLongSet intersectionWith(long[] elements);
-    ImmutableLongSet intersectionWith(LongSet elements);
-}
-```
-
-### Both interfaces derive these ones
-```java
 interface LongSet extends PrimitiveSet<Long> {
     boolean contains(long element);
     boolean containsAll(long[] elements);
@@ -54,15 +30,17 @@ interface LongSet extends PrimitiveSet<Long> {
     long[] copyToArray();
     LongIterator iterator();
 }
-```
-
-```java
-public interface PrimitiveSet<E> {
-    int size();
-    boolean isEmpty();
-    String toString();
-    boolean equals(Object other);
-    int hashCode();
+interface MutableLongTreeSet extends LongSet {
+    boolean add(long element);
+    boolean addAll(long[] elements);
+    boolean addAll(LongSet elements);
+    boolean remove(long element);
+    boolean removeAll(long[] elements);
+    boolean removeAll(LongSet elements);
+    boolean retainAll(long[] elements);
+    boolean retainAll(LongSet elements);
+    @Override MutableLongIterator iterator();
+    int addOrRemove(long element);
 }
 ```
 
@@ -99,25 +77,16 @@ ImmutableLongSet - Long/LongArray/LongSet: ImmutableLongSet
 
 ## Performance
 
-Insertions are <500 ns, searches are <100 ns average.
+Insertions are <250 ns, searches are <50 ns.
 
-![insertions](benchmarks/insersions.png)
-
-My MutableLongTreeSet is out of scale since it's 
-array-based and doing `System.arraycopy()` all the time.
+![insertions](benchmarks/insertions.png)
 
 ![searches](benchmarks/searches.png)
 
+Blitz! `MutableLongHashSet` is very compact:
+
+![deep size](benchmarks/memory.png)
+
 ## Threading
 
-`MutableLong*Set`s are absolutely **not** thread-safe.
-In multithreaded environment, use immutable collections,
-or drop me a line and I will implement
-`ConcurrentLongHashSet` or `COWLongTreeSet`.
-
-
-## To do
-
-* Memory benchmarks
-* ImmutableLongHashSet which [questionable] finds the best hashing algorithm
-for the fastest possible access
+`MutableLongHashSet`s are absolutely **not** thread-safe.
